@@ -103,5 +103,5 @@ graph TD;
 inicio[Iniciar pin 23 como salida del MP] --> Encender;
 Encender --> Esperar1[Esperar 1 segundo];
 Esperar1 --> Apagar;
-Apagar --> Esperar2[Esperar 1 segundo];
-Esperar2 --> Encender;
+Apagar --> Esperar1;
+Esperar1 --> Encender;
