@@ -1,4 +1,4 @@
-# Practica1
+# Practica1 Marc Grau
 Objetivos: 
   1. Generar el programa y subir el codigo al github de cada uno
   2. Modificar el programa para que incluya el envio de datos (ON y OFF) al puerto serie. Añadir la
