@@ -1,19 +1,23 @@
-# Practica1 Marc Grau
-Objetivos: 
-  1. Generar el programa y subir el codigo al github de cada uno
-  2. Modificar el programa para que incluya el envio de datos (ON y OFF) al puerto serie. Añadir la
-  iunicialización del puerto serie y el envio cada vez que cambia el estado del led.
-  Iniciar pin de led como salida
-  Iniciar el terminal serie
-  Bucle infinito:
-    Encender led
-    Sacar por puerto serie mensaje ON
-    Espera de 1000 milisegundos
-    Apagar led
-    Sacar por puesto serie mensaje OFF
-    Espera de 1000 milisegundos
+# Práctica 1 - Marc Grau
 
-Código:
+## Objetivos
+
+- Generar el programa y subir el código al GitHub de cada uno.
+- Modificar el programa para que incluya el envío de datos (ON y OFF) al puerto serie.
+- Añadir la inicialización del puerto serie y el envío cada vez que cambia el estado del LED.
+- Iniciar pin de LED como salida.
+- Iniciar el terminal serie.
+- Bucle infinito:
+  - Encender LED.
+  - Sacar por puerto serie mensaje ON.
+  - Espera de 1000 milisegundos.
+  - Apagar LED.
+  - Sacar por puerto serie mensaje OFF.
+  - Espera de 1000 milisegundos.
+
+## Código
+
+```cpp
 #include <Arduino.h>
 
 unsigned long previousMillis = 0;
@@ -21,66 +25,83 @@ const long interval = 1000;
 bool ledState = false;
 
 void setup() {
-  pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(LED_BUILTIN, OUTPUT);
+    Serial.begin(9600);
 }
 
 void loop() {
-  unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval) {
-    previousMillis = currentMillis;
-    ledState = !ledState;
-    digitalWrite(LED_BUILTIN, ledState);
-  }
+    unsigned long currentMillis = millis();
+    if (currentMillis - previousMillis >= interval) {
+        previousMillis = currentMillis;
+        ledState = !ledState;
+        digitalWrite(LED_BUILTIN, ledState);
+        Serial.println(ledState ? "ON" : "OFF");
+    }
 }
+```
 
+## Medición de frecuencia de encendido y apagado sin `delay`
 
-  3. Medición de frecuencia d'encendido y apagado sin delays
-Eliminar los delay modificar el pin de salida a uno cualquiera de los que estan disponibles i medir con el osciloscopio cual es la màxima frecuencia de apagado encendido que     permite el microcontrolador.
-  3.1 Medir la frecuencia en estos cuatro casos:
-  3.2 Con el envio por el puerto série del mensaje i utilizando las funciones de Arduino
-  3.3 Con el envio por el puerto série y accedirendo directamente a los registros
-  3.4 Sin el envio por el puerto série del mensaje i utilizando las funciones de Arduino
-  3.5 Sin el envio por el puerto série y accedirendo directamente a los registros
+Se elimina el `delay`, se modifica el pin de salida a uno cualquiera de los disponibles y se mide con el osciloscopio cuál es la máxima frecuencia de apagado/encendido que permite el microcontrolador.
 
-  3.1 Con envío por puerto serie utilizando funciones de arduino:
-    void loop() {
-     digitalWrite(led, HIGH);   // turn the LED on
-     Serial.println("ON"); //puerto serie sacar ON
-     digitalWrite(led, LOW);    // turn the LED off
-     Serial.println("OFF"); //puerto serie sacar OFF
-    }
-digitalwrite y println (delay: 0,5ms) --> 930Hz
+### Casos de medición
 
-  3.2 Con envío por puerto serie accediendo directamente a los registros
-  uint32_t *gpio_out = (uint32_t *)GPIO_OUT_REG;
-  void loop() {
-     Serial.println("ON");
-     *gpio_out |= (1 << led);
-     Serial.println("OFF");      
-     *gpio_out ^= (1 << led);
-    }
-reg y println (delay: 0,5ms) --> 930Hz
+#### 1. Con envío por puerto serie utilizando funciones de Arduino
 
-  3.3 Con el envio por el puerto série y accedirendo directamente a los registros
-  void loop() {
-     digitalWrite(led, HIGH);   // turn the LED on
-     digitalWrite(led, LOW);    // turn the LED off
-    }
-  digitalwrite sin println (delay: 0,5ms) --> 992Hz
+```cpp
+void loop() {
+    digitalWrite(led, HIGH);
+    Serial.println("ON");
+    digitalWrite(led, LOW);
+    Serial.println("OFF");
+}
+```
 
-  3.4 Sin el envio por el puerto série del mensaje i utilizando las funciones de Arduino
-  uint32_t *gpio_out = (uint32_t *)GPIO_OUT_REG;
-  void loop() {
-     *gpio_out |= (1 << led);
-     *gpio_out ^= (1 << led);
-    }
-con reg sin println (delay: 0,5ms) --> 992Hz
+- **Frecuencia medida**: 930Hz
 
+#### 2. Con envío por puerto serie accediendo directamente a los registros
 
-DIAGRAMA DE FLUJO
+```cpp
+uint32_t *gpio_out = (uint32_t *)GPIO_OUT_REG;
+void loop() {
+    Serial.println("ON");
+    *gpio_out |= (1 << led);
+    Serial.println("OFF");
+    *gpio_out ^= (1 << led);
+}
+```
+
+- **Frecuencia medida**: 930Hz
+
+#### 3. Sin envío por el puerto serie utilizando funciones de Arduino
+
+```cpp
+void loop() {
+    digitalWrite(led, HIGH);
+    digitalWrite(led, LOW);
+}
+```
+
+- **Frecuencia medida**: 992Hz
+
+#### 4. Sin envío por el puerto serie accediendo directamente a los registros
+
+```cpp
+uint32_t *gpio_out = (uint32_t *)GPIO_OUT_REG;
+void loop() {
+    *gpio_out |= (1 << led);
+    *gpio_out ^= (1 << led);
+}
+```
+
+- **Frecuencia medida**: 992Hz
+
+## Diagrama de Flujo
+
+```mermaid
 graph TD;
-    inicio[Iniciar pin 23 como salida del MP] --> Encender;
-    Encender --> Esperar[Esperar 1 segundo];
-    Esperar --> Apagar;
-    Apagar --> Esperar[Esperar 1 segundo];
-    Esperar --> Encender;
+inicio[Iniciar pin 23 como salida del MP] --> Encender;
+Encender --> Esperar1[Esperar 1 segundo];
+Esperar1 --> Apagar;
+Apagar --> Esperar2[Esperar 1 segundo];
+Esperar2 --> Encender;
