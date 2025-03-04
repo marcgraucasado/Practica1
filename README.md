@@ -20,6 +20,8 @@
 ```cpp
 #include <Arduino.h>
 
+#define LED_BUILTIN 21
+
 unsigned long previousMillis = 0;
 const long interval = 1000;
 bool ledState = false;
